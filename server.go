@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -30,14 +29,12 @@ type CardData struct {
 }
 
 func escapeVCardField(s string) string {
-	// Remove newlines and dangerous characters for vCard fields
 	return strings.ReplaceAll(strings.ReplaceAll(s, "\n", " "), "\r", " ")
 }
 
-// Read and encode the photo as base64
 func getBase64Photo(photoPath string) (string, error) {
 	if strings.HasPrefix(photoPath, "/") {
-		photoPath = "public" + photoPath // Adjust based on your folder structure
+		photoPath = "public" + photoPath
 	}
 	fileData, err := os.ReadFile(photoPath)
 	if err != nil {
@@ -51,50 +48,23 @@ func getBase64Photo(photoPath string) (string, error) {
 }
 
 func main() {
-	// --- Set Gin mode from env or default to release ---
-	mode := gin.ReleaseMode
-	if val, ok := os.LookupEnv("GIN_MODE"); ok {
-		mode = val
-	}
-	gin.SetMode(mode)
+	// Force Gin release mode for production
+	gin.SetMode(gin.ReleaseMode)
 
-	// --- Detect environment for your own use ---
-	env := "production"
-	if gin.Mode() == gin.DebugMode {
-		env = "development"
-	}
-
-	// --- Choose template file (minified in production if available) ---
-	templateFile := "public/index.html"
-	if env == "production" {
-		if _, err := os.Stat("public/index.min.html"); err == nil {
-			templateFile = "public/index.min.html"
-		}
-	}
-
-	// --- Use Gin's HTML template loader ---
+	// Use Gin's default router
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	// --- Security headers middleware with Google Fonts CSP ---
+	// Security headers middleware (simplified CSP for troubleshooting)
 	r.Use(func(c *gin.Context) {
-		if env == "production" {
-			c.Writer.Header().Set("Content-Security-Policy",
-				"default-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdnjs.cloudflare.com;"+
-					" style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com;"+
-					" font-src 'self' https://fonts.gstatic.com;"+
-					" script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdnjs.cloudflare.com 'unsafe-eval';"+
-					" img-src * data: blob:;")
-		}
+		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'")
 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
 		c.Writer.Header().Set("X-Frame-Options", "DENY")
-		c.Writer.Header().Set("Referrer-Policy", "no-referrer")
-		c.Writer.Header().Set("Cache-Control", "no-store")
 		c.Next()
 	})
 
-	// --- Load the template for Gin ---
-	r.LoadHTMLFiles(templateFile)
+	// Load the template (ensure this file exists in your repo!)
+	r.LoadHTMLFiles("public/index.html")
 
 	metaDescription := "Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries."
 	data := CardData{
@@ -125,18 +95,16 @@ func main() {
 		c.Header("Content-Disposition", "attachment; filename=\""+data.Name+".vcf\"")
 		c.Header("Cache-Control", "no-store")
 
-		// Get photo as base64
 		photoBase64, err := getBase64Photo(data.Photo)
 		photoSection := ""
 		if err != nil {
 			log.Printf("Failed to encode photo: %v", err)
 		}
 		if err == nil && photoBase64 != "" {
-			photoType := "JPEG" // Or detect from mime type
+			photoType := "JPEG"
 			photoSection = "PHOTO;ENCODING=b;TYPE=" + photoType + ":" + photoBase64 + "\n"
 		}
 
-		// Custom note handling: add prefix (from query param) with a vCard newline if present
 		finalNote := escapeVCardField(data.Notes)
 		prefix := c.Query("prefix")
 		if len(prefix) > 500 {
@@ -146,7 +114,6 @@ func main() {
 			finalNote = escapeVCardField(prefix) + "\\n" + finalNote
 		}
 
-		// Format social links for the note field
 		extraLinks := ""
 		if data.GitHub != "" {
 			extraLinks += "GitHub: " + data.GitHub + "\\n"
@@ -166,7 +133,6 @@ func main() {
 			noteWithLinks += "\\n" + extraLinks
 		}
 
-		// Create structured name parts (better compatibility)
 		nameParts := strings.Split(data.Name, " ")
 		lastName := ""
 		firstName := data.Name
@@ -191,21 +157,16 @@ func main() {
 		c.String(http.StatusOK, vcard)
 	})
 
-	// Serve static files
+	// Serve static files (ensure this directory exists!)
 	r.Static("/static", "public/assets")
 
+	// Use PORT from env (Leapcell sets this), default to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-
-	log.Println("Server running on port:" + port)
-	srv := &http.Server{
-		Addr:           ":" + port,
-		Handler:        r,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	log.Printf("Server running on port %s", port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
-	log.Fatal(srv.ListenAndServe())
 }

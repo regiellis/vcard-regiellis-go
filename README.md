@@ -1,7 +1,5 @@
 # Regi Ellis Smart Card Site
 
-![Regi Ellis](https://regiellis.com/static/images/og-image.png)
-
 [![Go](https://img.shields.io/badge/Go-1.22-blue?logo=go)](https://go.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
 [![Alpine.js](https://img.shields.io/badge/Alpine.js-3.x-77c1d2?logo=alpine.js)](https://alpinejs.dev/)
