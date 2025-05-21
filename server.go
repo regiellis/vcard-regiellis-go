@@ -57,13 +57,12 @@ func main() {
 
 	// Security headers middleware (simplified CSP for troubleshooting)
 	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'")
+		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdnjs.cloudflare.com 'unsafe-inline'; img-src * data: blob:;")
 		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
 		c.Writer.Header().Set("X-Frame-Options", "DENY")
 		c.Next()
 	})
 
-	// Load the template (ensure this file exists in your repo!)
 	r.LoadHTMLFiles("public/index.html")
 
 	metaDescription := "Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries."
@@ -156,8 +155,6 @@ func main() {
 			"END:VCARD\n"
 		c.String(http.StatusOK, vcard)
 	})
-
-	// Serve static files (ensure this directory exists!)
 	r.Static("/static", "public/assets")
 
 	// Use PORT from env (Leapcell sets this), default to 8080
