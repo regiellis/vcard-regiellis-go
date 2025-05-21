@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regi Ellis / Happily bullying 1's and 0's for over 15 years</title>
+    <meta name="description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
+    <meta name="keywords" content="Regi Ellis, Orlando developer, award-winning developer, front-end, back-end, web development, DevOps, technical leadership, generative AI, ComfyUI, InvokeAI, Unreal Engine, ICVFX, real-time graphics, video production, green screen, Python, Go, CLI tools, creative technology, mentorship, industry awards, immersive experiences, innovation, team leadership, technical mentor, content creation, real-time, developer tools">
+    <meta name="author" content="ByNine">
+    <link rel="canonical" href="https://card.regiellis.com/">
+
+    <!-- Open Graph Meta -->
+    <meta property="og:title" content="Regi Ellis / Happily bullying 1's and 0's for over 15 years">
+    <meta property="og:description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://card.regiellis.com/">
+    <meta property="og:image" content="https://card.regiellis.com/static/images/og-image.png">
+
+    <!-- Twitter/X Meta -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Regi Ellis / Happily bullying 1's and 0's for over 15 years">
+    <meta name="twitter:description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
+    <meta name="twitter:image" content="https://card.regiellis.com/static/images/og-image.png">
+    <meta name="twitter:site" content="@bynineio">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #irregular-bg-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            display: block;
+            opacity: 0.13;
+        }
+        @media screen and (orientation:landscape) {
+            body::before {
+                content: "Please rotate your device to portrait mode.";
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: rgba(0,0,0,0.97);
+                color: #ffe066;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                font-family: 'Figtree', 'Inter', sans-serif;
+                text-align: center;
+                padding: 2rem;
+            }
+            main, #vcard-download-section, #branding-shapes-container, #irregular-bg-canvas {
+                filter: blur(6px) grayscale(0.7) brightness(0.7);
+                pointer-events: none !important;
+                user-select: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black min-h-svh flex flex-col font-sans">
+
+    <!-- Irregular animated background canvas -->
+    <canvas id="irregular-bg-canvas"></canvas>
+
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-8 w-full"
+          x-data="vcardDownload()"
+          x-init="init()">
+        <!-- Fade-in Download Notice -->
+        <div x-show="showNotice"
+             x-transition.opacity.duration.600ms
+             class="fixed top-0 left-0 w-full z-50 flex justify-center"
+             aria-live="polite">
+            <div class="w-full max-w-2xl bg-yellow-400 text-black font-semibold px-6 py-3 shadow-lg text-center mt-0">
+            Preparing my vCard for you to download...
+            </div>
+        </div>
+
+        <div class="mx-auto max-w-7xl flex flex-col lg:flex-row lg:items-center lg:justify-between py-8 px-5 w-full"> 
+            <div class="text-white flex flex-row items-center justify-between"> 
+                <a href="/" title="its.just.regi" aria-label="homepage" class="items-center inline-flex font-display uppercase">
+                    <span>its.just.<span class="text-yellow-400">regi</span>// Spaces<span class="text-yellow-400">.</span></span>
+                </a>
+            </div>
+        </div>
+        <!-- Interactive Branding Shapes Container -->
+        <div id="branding-shapes-container"
+            class="w-full h-[150px] relative overflow-hidden mb-10 opacity-0 transition-opacity duration-700"
+            style="touch-action: none; min-height:150px;">
+        </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Branding colors
+            const colors = [
+               "#ffe066", // yellow
+               "#fffbe6", // light yellow
+               "#1a1a1a", // dark
+               "#fbbf24", // orange-yellow
+               "#f59e42"  // accent
+            ];
+            const shapeCount = 12;
+            const container = document.getElementById('branding-shapes-container');
+            let shapes = [];
+
+            // Device orientation state (smoothed)
+            let orientation = { beta: 0, gamma: 0 };
+            let targetOrientation = { beta: 0, gamma: 0 };
+
+            // DeviceOrientation event (with permission request for iOS)
+            function setupDeviceOrientation() {
+                function handler(event) {
+                    targetOrientation.beta = event.beta || 0;   // front-back tilt
+                    targetOrientation.gamma = event.gamma || 0; // left-right tilt
+                }
+                if (window.DeviceOrientationEvent) {
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        // iOS 13+
+                        DeviceOrientationEvent.requestPermission().then(response => {
+                            if (response === 'granted') {
+                                window.addEventListener('deviceorientation', handler, true);
+                            }
+                        }).catch(console.error);
+                    } else {
+                        // Non-iOS
+                        window.addEventListener('deviceorientation', handler, true);
+                    }
+                } else if (window.DeviceMotionEvent) {
+                    // Fallback for older devices
+                    window.addEventListener('devicemotion', (event) => {
+                        if (event.accelerationIncludingGravity) {
+                            targetOrientation.gamma = event.accelerationIncludingGravity.x || 0;
+                            targetOrientation.beta = event.accelerationIncludingGravity.y || 0;
+                        }
+                    });
+                }
+            }
+            setupDeviceOrientation();
+
+            function createShapes() {
+                container.innerHTML = "";
+                shapes = [];
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+                for (let i = 0; i < shapeCount; i++) {
+                    const div = document.createElement('div');
+                    const size = Math.random() * 32 + 34;
+                    div.style.width = `${size}px`;
+                    div.style.height = `${size}px`;
+                    div.style.borderRadius = Math.random() > 0.5 ? '50%' : '30% 70% 70% 30% / 30% 30% 70% 70%';
+                    div.style.background = colors[i % colors.length];
+                    div.style.position = 'absolute';
+                    div.style.left = `${Math.random() * (width - size)}px`;
+                    div.style.top = `${Math.random() * (height - size)}px`;
+                    div.style.boxShadow = '0 2px 16px 0 rgba(0,0,0,0.10)';
+                    div.style.opacity = '0.93';
+                    div.style.zIndex = 1;
+                    container.appendChild(div);
+                    shapes.push({
+                        el: div,
+                        x: parseFloat(div.style.left),
+                        y: parseFloat(div.style.top),
+                        vx: (Math.random() - 0.5) * 1.2,
+                        vy: (Math.random() - 0.5) * 1.2,
+                        size: size
+                    });
+                }
+            }
+
+            function animateShapes() {
+                // Smooth orientation data (low-pass filter)
+                orientation.beta += (targetOrientation.beta - orientation.beta) * 0.07;
+                orientation.gamma += (targetOrientation.gamma - orientation.gamma) * 0.07;
+
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+
+                for (let i = 0; i < shapes.length; i++) {
+                    let s = shapes[i];
+                    // Device orientation influence
+                    s.vx += orientation.gamma * 0.005;
+                    s.vy += orientation.beta * 0.005;
+
+                    s.x += s.vx;
+                    s.y += s.vy;
+
+                    // Bounce off walls
+                    if (s.x < 0) { s.x = 0; s.vx *= -0.7; }
+                    if (s.x > width - s.size) { s.x = width - s.size; s.vx *= -0.7; }
+                    if (s.y < 0) { s.y = 0; s.vy *= -0.7; }
+                    if (s.y > height - s.size) { s.y = height - s.size; s.vy *= -0.7; }
+
+                    // Simple repulsion
+                    for (let j = i + 1; j < shapes.length; j++) {
+                        let s2 = shapes[j];
+                        let dx = (s.x + s.size/2) - (s2.x + s2.size/2);
+                        let dy = (s.y + s.size/2) - (s2.y + s2.size/2);
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        let minDist = (s.size + s2.size) / 2.2;
+                        if (dist < minDist && dist > 0) {
+                            let force = (minDist - dist) * 0.09;
+                            let fx = (dx / dist) * force;
+                            let fy = (dy / dist) * force;
+                            s.vx += fx;
+                            s.vy += fy;
+                            s2.vx -= fx;
+                            s2.vy -= fy;
+                        }
+                    }
+
+                    anime({
+                        targets: s.el,
+                        left: s.x + 'px',
+                        top: s.y + 'px',
+                        duration: 180,
+                        easing: 'easeOutQuad'
+                    });
+                }
+                requestAnimationFrame(animateShapes);
+            }
+
+            createShapes();
+            animateShapes();
+            // Fade in branding shapes container after shapes are created
+            setTimeout(() => {
+                document.getElementById('branding-shapes-container').style.opacity = '1';
+            }, 100);
+
+            // Responsive resize and scroll
+            function handleResizeOrScroll() {
+                const width = container.offsetWidth;
+                const height = container.offsetHeight;
+                for (let s of shapes) {
+                    s.x = Math.max(0, Math.min(s.x, width - s.size));
+                    s.y = Math.max(0, Math.min(s.y, height - s.size));
+                }
+            }
+            window.addEventListener('resize', () => {
+                createShapes();
+                handleResizeOrScroll();
+            });
+            window.addEventListener('scroll', handleResizeOrScroll);
+        });
+        </script>
+
+        <section>
+            <div class="p-4 max-w-7xl mx-auto lg:py-32">
+                <div class="max-w-2xl">
+                    <span class="text-neutral-400 font-light">About</span>
+                    <h3 class="text-white mt-6 text-lg font-light text-balance font-[Figtree] normal-case">
+                        I am an award-winning Developer based in Orlando, with a strong background in both front-end and back-end web development, with a touch of DevOps. My career has spanned leading-edge web projects, team leadership, and technical mentorship, earning multiple industry awards along the way.
+                    </h3>
+                    <p class="text-neutral-400 mt-6 normal-case">
+                        A tech enthusiast with a real knack for connecting creativity and innovation across different industries. I'm currently fascinated by generative AI, and I’m diving deep into tools like ComfyUI and InvokeAI – it's truly amazing to see the possibilities. Beyond that, I bring expertise in Unreal Engine, where I am working to become a generalist, a passion for crafting immersive experiences with ICVFX and real-time graphics, and a strong foundation in video production, from creating dynamic content with green screen techniques to capturing authentic moments through traditional filming.
+                    </p>
+                    <p class="text-neutral-400 mt-6 normal-case">
+                        Beyond that I have been known to create tools in Python or Go, where I spend time creating Command line tools to help solve problems in my workflow, normally resulting in a tool that I can share with the community. You can find some of these tools in the list below.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- Download vCard (always fixed at bottom) -->
+        <div id="vcard-download-section"
+            class="fixed bottom-0 left-0 w-full z-40 flex flex-col items-center pointer-events-none">
+            <div class="w-full max-w-none mx-auto px-0 pointer-events-auto">
+               <template x-if="!downloaded">
+                  <a id="vcard-download-link"
+                    :href="vcardUrl"
+                    download
+                    class="hidden w-full border border-yellow-400 bg-yellow-400 text-black py-6 px-4 shadow-none flex items-center justify-center font-medium uppercase tracking-tight hover:bg-yellow-300 hover:text-black transition-colors rounded-none"
+                    style="margin-bottom:0"
+                    aria-label="Download vCard">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                     </svg>
+                     Download vCard
+                  </a>
+               </template>
+               <template x-if="downloaded">
+                  <a id="vcard-pulse-btn"
+                    :href="vcardUrl"
+                    download
+                    class="w-full border border-yellow-400 bg-yellow-400 text-black py-6 px-4 shadow-none flex items-center justify-center font-medium uppercase tracking-tight hover:bg-yellow-300 hover:text-black transition-colors rounded-none"
+                    style="margin-bottom:0"
+                    aria-label="Download vCard">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                     </svg>
+                     Download vCard
+                  </a>
+               </template>
+            </div>
+        </div>
+        <div class="h-24"></div>
+    </main>
+
+    <!-- Alpine.js CDN (must be loaded before x-data usage) -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- HTMX CDN -->
+    <script defer src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Anime.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+    // Alpine.js vCard logic (unchanged)
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('vcardDownload', function() {
+            return {
+                downloaded: false,
+                showNotice: false,
+                vcardUrl: '/vcard' + window.location.search,
+                init() {
+                    const key = 'vcard_downloaded';
+                    const expiryKey = 'vcard_downloaded_expiry';
+                    const now = Date.now();
+                    const expiry = parseInt(sessionStorage.getItem(expiryKey), 10);
+                    if (sessionStorage.getItem(key) === 'true' && expiry && now < expiry) {
+                        this.downloaded = true;
+                        this.showNotice = false;
+                    } else {
+                        this.downloaded = false;
+                        sessionStorage.removeItem(key);
+                        sessionStorage.removeItem(expiryKey);
+                        setTimeout(() => {
+                            this.showNotice = true;
+                        }, 0); // Show notice immediately
+                        setTimeout(() => {
+                            this.showNotice = false;
+                            this.$nextTick(() => {
+                                if (!this.downloaded) {
+                                    const link = document.getElementById('vcard-download-link');
+                                    if (link) link.click();
+                                    this.downloaded = true;
+                                    sessionStorage.setItem(key, 'true');
+                                    sessionStorage.setItem(expiryKey, (now + 7 * 24 * 60 * 60 * 1000).toString());
+                                }
+                            });
+                        }, 2000);
+                    }
+                }
+            }
+        });
+    });
+
+    // Irregular animated background with points and pulsing lines
+    function generateIrregularPoints(width, height, count, margin) {
+        let points = [];
+        for (let i = 0; i < count; i++) {
+            points.push({
+                x: Math.random() * (width - margin * 2) + margin,
+                y: Math.random() * (height - margin * 2) + margin
+            });
+        }
+        return points;
+    }
+    function getNearestNeighbors(points, k = 3) {
+        let neighbors = [];
+        for (let i = 0; i < points.length; i++) {
+            let dists = points.map((p, j) => ({
+                index: j,
+                dist: Math.hypot(points[i].x - p.x, points[i].y - p.y)
+            }));
+            dists.sort((a, b) => a.dist - b.dist);
+            neighbors.push(dists.slice(1, k + 1).map(d => d.index));
+        }
+        return neighbors;
+    }
+    function drawIrregularGrid(ctx, width, height, points, neighbors, drawnLines, pulsePoint) {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < drawnLines.length; i++) {
+            const [from, to, progress] = drawnLines[i];
+            const p1 = points[from];
+            const p2 = points[to];
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = "#ffe066";
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            if (progress < 1) {
+                const x = p1.x + (p2.x - p1.x) * progress;
+                const y = p1.y + (p2.y - p1.y) * progress;
+                ctx.lineTo(x, y);
+            } else {
+                ctx.lineTo(p2.x, p2.y);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+        for (let i = 0; i < points.length; i++) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(points[i].x, points[i].y, (pulsePoint && pulsePoint.index === i) ? pulsePoint.radius : 4.5, 0, 2 * Math.PI);
+            ctx.globalAlpha = 0.95;
+            ctx.fillStyle = "#fffbe6";
+            ctx.strokeStyle = "#ffe066";
+            ctx.lineWidth = 1.7;
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    function animateIrregularGrid() {
+        const canvas = document.getElementById('irregular-bg-canvas');
+        const dpr = window.devicePixelRatio || 1;
+        let width = window.innerWidth, height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const pointCount = 26;
+        const margin = 60;
+        const points = generateIrregularPoints(width, height, pointCount, margin);
+        const neighbors = getNearestNeighbors(points, 3);
+
+        let allLines = [];
+        for (let i = 0; i < points.length; i++) {
+            for (let j = 0; j < neighbors[i].length; j++) {
+                let ni = neighbors[i][j];
+                if (ni > i) allLines.push([i, ni]);
+            }
+        }
+
+        let drawnLines = [];
+        let pulsePoint = null;
+
+        function drawFrame() {
+            drawIrregularGrid(ctx, width, height, points, neighbors, drawnLines, pulsePoint);
+        }
+        function animateLine(from, to, cb) {
+            let progress = { t: 0 };
+            anime({
+                targets: progress,
+                t: 1,
+                duration: 500,
+                easing: 'easeInOutSine',
+                update: () => {
+                    if (drawnLines.length > 0 && drawnLines[drawnLines.length - 1][2] < 1) {
+                        drawnLines[drawnLines.length - 1][2] = progress.t;
+                    } else {
+                        drawnLines.push([from, to, progress.t]);
+                    }
+                    drawFrame();
+                },
+                complete: () => {
+                    drawnLines[drawnLines.length - 1][2] = 1;
+                    cb();
+                }
+            });
+        }
+        function pulseAtPoint(index, cb) {
+            pulsePoint = { index, radius: 4.5 };
+            anime({
+                targets: pulsePoint,
+                radius: 12,
+                duration: 220,
+                direction: 'alternate',
+                easing: 'easeInOutSine',
+                update: drawFrame,
+                complete: () => {
+                    pulsePoint = null;
+                    drawFrame();
+                    cb();
+                }
+            });
+        }
+        function animateSequence(idx) {
+            if (idx >= allLines.length) return;
+            const [from, to] = allLines[idx];
+            animateLine(from, to, () => {
+                pulseAtPoint(to, () => {
+                    animateSequence(idx + 1);
+                });
+            });
+        }
+        drawFrame();
+        animateSequence(0);
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + "px";
+            canvas.style.height = height + "px";
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            drawFrame();
+        });
+    }
+    document.addEventListener('DOMContentLoaded', animateIrregularGrid);
+    </script>
+</body>
+</html>

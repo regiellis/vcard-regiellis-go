@@ -1,0 +1,55 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of the go coverage tool
+*.out
+
+# Test binary, built with `go test -c`
+*.test
+
+# OS or editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Dependency directories (uncomment if you use vendoring)
+# vendor/
+
+# Ignore built application (if your binary is named after your project directory)
+vcard-regiellis-go
+main
+
+# Ignore photos or other large assets if not needed in repo
+
+
+# Ignore environment/config files (add as needed)
+.env
+.env.*
+
+# Ignore temporary and build folders
+/tmp/
+*.log
+
+# Ignore system files
+*.bak
+
+# Ignore node_modules if any frontend tooling is added
+node_modules/
+
+# Ignore GoLand/JetBrains project files
+.idea/
+
+# Ignore Mac system files
+.AppleDouble
+.LSOverride
+Icon?
+
+# Ignore VSCode workspace settings
+*.code-workspace
