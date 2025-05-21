@@ -194,9 +194,14 @@ func main() {
 	// Serve static files
 	r.Static("/static", "public/assets")
 
-	log.Println("Server running on :8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Println("Server running on port:" + port)
 	srv := &http.Server{
-		Addr:           ":8080",
+		Addr:           ":" + port,
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
