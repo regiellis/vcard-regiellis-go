@@ -266,7 +266,7 @@
             class="fixed bottom-0 left-0 w-full z-40 flex flex-col items-center pointer-events-none">
             <div class="w-full max-w-none mx-auto px-0 pointer-events-auto">
                 <a id="vcard-download-link"
-                    href="/vcard"
+                    href="/vcard{{ '?prefix=' + Prefix if Prefix }}"
                     download
                     class="w-full border border-yellow-400 bg-yellow-400 text-black py-6 px-4 shadow-none flex items-center justify-center font-medium uppercase tracking-tight hover:bg-yellow-300 hover:text-black transition-colors rounded-none"
                     style="margin-bottom:0; display:none;"
@@ -315,6 +315,15 @@
                     sessionStorage.setItem(expiryKey, (now + 7 * 24 * 60 * 60 * 1000).toString());
                 }
             }, 2000);
+        }
+
+        // Ensure vCard download link includes ?prefix=... if present in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefix = urlParams.get('prefix');
+        const vcardLink = document.getElementById('vcard-download-link');
+        if (vcardLink && prefix) {
+            let base = vcardLink.getAttribute('href').split('?')[0];
+            vcardLink.setAttribute('href', base + '?prefix=' + encodeURIComponent(prefix));
         }
     });
 

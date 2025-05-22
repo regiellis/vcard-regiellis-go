@@ -85,13 +85,17 @@ func main() {
 	}
 
 	r.GET("/", func(c *gin.Context) {
+		prefix := c.Query("prefix")
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"Card":            data,
 			"MetaDescription": metaDescription,
+			"Prefix":          prefix,
 		})
 	})
 
 	r.GET("/vcard", func(c *gin.Context) {
+		prefix := c.Query("prefix")
+
 		c.Header("Content-Type", "text/vcard")
 		c.Header("Content-Disposition", "attachment; filename=\""+data.Name+".vcf\"")
 		c.Header("Cache-Control", "no-store")
@@ -107,7 +111,6 @@ func main() {
 		}
 
 		finalNote := escapeVCardField(data.Notes)
-		prefix := c.Query("prefix")
 		if len(prefix) > 500 {
 			prefix = ""
 		}
