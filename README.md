@@ -1,4 +1,4 @@
-# Regi Ellis Smart Card Site
+# Smart Bussiness Card
 
 [![Go](https://img.shields.io/badge/Go-1.22-blue?logo=go)](https://go.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
