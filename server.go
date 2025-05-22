@@ -68,7 +68,7 @@ func main() {
 
 	r.LoadHTMLFiles("public/index.html")
 
-	metaDescription := "Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries."
+	metaDescription := "Award-winning Orlando-based Full stack developer, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries."
 	data := CardData{
 		Name:      "Regi Ellis",
 		Role:      "Web Veteran & DevOps Tooling | Python, Go, AI Integration | Unreal Engine Enthusiast",
@@ -82,7 +82,7 @@ func main() {
 		LinkedIn:  "https://www.linkedin.com/in/rellis/",
 		Instagram: "https://www.instagram.com/_its.just.regi_/",
 		YouTube:   "https://www.youtube.com/@_its.just.regi_/videos",
-		Notes:     "Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.",
+		Notes:     "Award-winning Orlando-based Full stack developer, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.",
 	}
 
 	r.GET("/", func(c *gin.Context) {
