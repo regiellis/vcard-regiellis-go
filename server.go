@@ -34,7 +34,7 @@ func escapeVCardField(s string) string {
 
 func getBase64Photo(photoPath string) (string, error) {
 	if strings.HasPrefix(photoPath, "/") {
-		photoPath = "public" + photoPath
+		photoPath = photoPath
 	}
 	fileData, err := os.ReadFile(photoPath)
 	if err != nil {
@@ -55,13 +55,13 @@ func main() {
 	r := gin.Default()
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	// Security headers middleware (simplified CSP for troubleshooting)
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdnjs.cloudflare.com 'unsafe-inline'; img-src * data: blob:;")
-		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-		c.Writer.Header().Set("X-Frame-Options", "DENY")
-		c.Next()
-	})
+	// Security headers middleware (CSP temporarily disabled)
+	// r.Use(func(c *gin.Context) {
+	// 	c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; script-src 'self'; img-src * data: blob:; connect-src 'self'; frame-ancestors 'none'; report-uri /csp-violation-report-endpoint;")
+	// 	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+	// 	c.Writer.Header().Set("X-Frame-Options", "DENY")
+	// 	c.Next()
+	// })
 
 	r.LoadHTMLFiles("public/index.html")
 
