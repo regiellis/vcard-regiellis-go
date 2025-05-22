@@ -56,12 +56,14 @@ func main() {
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// Security headers middleware (CSP temporarily disabled)
-	// r.Use(func(c *gin.Context) {
-	// 	c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; script-src 'self'; img-src * data: blob:; connect-src 'self'; frame-ancestors 'none'; report-uri /csp-violation-report-endpoint;")
-	// 	c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
-	// 	c.Writer.Header().Set("X-Frame-Options", "DENY")
-	// 	c.Next()
-	// })
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Security-Policy", "default-src 'self'; connect-src *; font-src *; script-src-elem * 'unsafe-inline'; img-src * data:; style-src * 'unsafe-inline';")
+		c.Writer.Header().Set("X-Content-Type-Options", "nosniff")
+		c.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
+		c.Writer.Header().Set("Referrer-Policy", "no-referrer")
+		c.Writer.Header().Set("X-Frame-Options", "DENY")
+		c.Next()
+	})
 
 	r.LoadHTMLFiles("public/index.html")
 

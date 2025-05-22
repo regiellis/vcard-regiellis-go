@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /tmp/
+Disallow: /vcard
+Allow: /$
+Allow: /static/
