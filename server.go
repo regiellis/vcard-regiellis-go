@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"net/url"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -93,11 +94,14 @@ func main() {
 		})
 	})
 
-	r.GET("/vcard", func(c *gin.Context) {
 		prefix := c.Query("prefix")
+		if decoded, err := url.QueryUnescape(prefix); err == nil {
+			prefix = decoded
+		}
 
 		c.Header("Content-Type", "text/vcard")
 		c.Header("Content-Disposition", "attachment; filename=\""+data.Name+".vcf\"")
+		c.Header("Cache-Control", "no-store")
 		c.Header("Cache-Control", "no-store")
 
 		photoBase64, err := getBase64Photo(data.Photo)
