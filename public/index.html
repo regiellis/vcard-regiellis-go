@@ -7,20 +7,20 @@
     <meta name="description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
     <meta name="keywords" content="Regi Ellis, Orlando developer, award-winning developer, front-end, back-end, web development, DevOps, technical leadership, generative AI, ComfyUI, InvokeAI, Unreal Engine, ICVFX, real-time graphics, video production, green screen, Python, Go, CLI tools, creative technology, mentorship, industry awards, immersive experiences, innovation, team leadership, technical mentor, content creation, real-time, developer tools">
     <meta name="author" content="ByNine">
-    <link rel="canonical" href="https://card.regiellis.com/">
+    <link rel="canonical" href="https://vcard.regiellis.com/">
 
     <!-- Open Graph Meta -->
     <meta property="og:title" content="Regi Ellis / Happily bullying 1's and 0's for over 15 years">
     <meta property="og:description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://card.regiellis.com/">
-    <meta property="og:image" content="https://card.regiellis.com/static/images/og-image.png">
+    <meta property="og:url" content="https://vcard.regiellis.com/">
+    <meta property="og:image" content="https://vcard.regiellis.com/static/images/og-image.png">
 
     <!-- Twitter/X Meta -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Regi Ellis / Happily bullying 1's and 0's for over 15 years">
     <meta name="twitter:description" content="Award-winning Orlando-based developer with expertise in front-end, back-end, DevOps, and technical leadership. Passionate about generative AI, Unreal Engine, ICVFX, real-time graphics, and video production. Bridging creativity and innovation across industries.">
-    <meta name="twitter:image" content="https://card.regiellis.com/static/images/og-image.png">
+    <meta name="twitter:image" content="https://vcard.regiellis.com/static/images/og-image.png">
     <meta name="twitter:site" content="@bynineio">
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
@@ -69,8 +69,20 @@
     <!-- Irregular animated background canvas -->
     <canvas id="irregular-bg-canvas"></canvas>
 
-    <main class="flex-1 flex flex-col items-center justify-center px-4 py-8 w-full"
-          id="main-vcard">
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-8 w-full" id="main-vcard">
+        <!-- QR Code Modal (HTMX target) -->
+        <div id="qrcode-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+            <div id="qrcode-modal-content" class="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center relative min-w-[320px] min-h-[320px]">
+                <button id="qrcode-close" class="absolute top-2 right-2 text-black text-2xl font-bold hover:text-yellow-500" aria-label="Close QR Code">&times;</button>
+                <div id="qrcode-container" class="my-4"></div>
+                <div class="flex flex-col gap-2 w-full mt-4">
+                    <label for="qr-url" class="text-xs text-gray-700">Message</label>
+                    <input id="qr-url" type="text" class="border border-gray-300 rounded px-2 py-1 w-full text-xs" />
+                    <button id="qr-update" class="mt-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-4 py-2 rounded transition uppercase">Update</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Fade-in Download Notice -->
         <div id="vcard-notice"
              class="fixed top-0 left-0 w-full z-50 flex justify-center hidden"
@@ -281,6 +293,8 @@
         <div class="h-24"></div>
     </main>
 
+    <!-- QRCode.js -->
+    <script src="/static/scripts/qrcode.min.js"></script>
     <!-- HTMX -->
     <script defer src="/static/scripts/htmx.js"></script>
     <!-- Anime.js -->
@@ -476,6 +490,68 @@
         });
     }
     document.addEventListener('DOMContentLoaded', animateIrregularGrid);
+
+    // QR Code Modal Logic
+    function showQrModal(prefix) {
+        const modal = document.getElementById('qrcode-modal');
+        const container = document.getElementById('qrcode-container');
+        const input = document.getElementById('qr-url');
+        if (!modal || !container || !input) return;
+        container.innerHTML = '';
+        // Sanitize prefix: only allow numbers, letters, and spaces
+        let safePrefix = (prefix || '').replace(/[^a-zA-Z0-9 ]/g, '');
+        const qrUrl = 'https://vcard.regiellis.com/vcard' + (safePrefix ? ('?prefix=' + encodeURIComponent(safePrefix)) : '');
+        new QRCode(container, {
+            text: qrUrl,
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        input.value = safePrefix;
+        modal.classList.remove('hidden');
+        input.focus();
+    }
+    function hideQrModal() {
+        const modal = document.getElementById('qrcode-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+    function updateQrCode() {
+        const input = document.getElementById('qr-url');
+        if (!input) return;
+        // Only allow numbers, letters, and spaces
+        let safePrefix = input.value.replace(/[^a-zA-Z0-9 ]/g, '');
+        input.value = safePrefix;
+        showQrModal(safePrefix);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // QR modal open/close logic
+        const closeBtn = document.getElementById('qrcode-close');
+        if (closeBtn) closeBtn.onclick = hideQrModal;
+        const updateBtn = document.getElementById('qr-update');
+        if (updateBtn) updateBtn.onclick = updateQrCode;
+        // Listen for hash change
+        function checkHashForQr() {
+            if (window.location.hash === '#qrcode') {
+                // Only use prefix param from current URL, sanitize it
+                const urlParams = new URLSearchParams(window.location.search);
+                let prefix = urlParams.get('prefix') || '';
+                prefix = prefix.replace(/[^a-zA-Z0-9 ]/g, '');
+                showQrModal(prefix);
+            } else {
+                hideQrModal();
+            }
+        }
+        window.addEventListener('hashchange', checkHashForQr);
+        checkHashForQr();
+        // Prevent bots/search: hide modal from bots
+        const modal = document.getElementById('qrcode-modal');
+        if (modal) {
+            modal.setAttribute('aria-hidden', 'true');
+            modal.setAttribute('data-noindex', 'true');
+        }
+    });
     </script>
 </body>
 </html>
