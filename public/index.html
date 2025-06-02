@@ -339,6 +339,12 @@
             let base = vcardLink.getAttribute('href').split('?')[0];
             vcardLink.setAttribute('href', base + '?prefix=' + encodeURIComponent(prefix));
         }
+
+        // Prevent auto vCard download if #qrcode is present in the URL
+        if (window.location.hash === '#qrcode') {
+            if (link) link.style.display = '';
+            return;
+        }
     });
 
     // Irregular animated background with points and pulsing lines
