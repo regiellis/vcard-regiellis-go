@@ -105,6 +105,19 @@
             style="touch-action: none; min-height:150px;">
         </div>
         <script>
+        // Utility: Debounce function for performance optimization
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Branding colors
             const colors = [
@@ -182,7 +195,24 @@
                 }
             }
 
-            function animateShapes() {
+            // Throttle animation to 30fps with visibility detection
+            let lastShapeFrameTime = 0;
+            const shapeFrameInterval = 1000 / 30; // 30fps for better performance
+
+            function animateShapes(timestamp) {
+                // Pause when page is hidden to save resources
+                if (document.hidden) {
+                    requestAnimationFrame(animateShapes);
+                    return;
+                }
+
+                // Throttle to 30fps
+                if (timestamp - lastShapeFrameTime < shapeFrameInterval) {
+                    requestAnimationFrame(animateShapes);
+                    return;
+                }
+                lastShapeFrameTime = timestamp;
+
                 // Smooth orientation data (low-pass filter)
                 orientation.beta += (targetOrientation.beta - orientation.beta) * 0.07;
                 orientation.gamma += (targetOrientation.gamma - orientation.gamma) * 0.07;
@@ -235,7 +265,17 @@
             }
 
             createShapes();
-            animateShapes();
+            animateShapes(performance.now());
+
+            // Visibility change listener for performance monitoring
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    console.log('Animations paused (page hidden)');
+                } else {
+                    console.log('Animations resumed (page visible)');
+                }
+            });
+
             // Fade in branding shapes container after shapes are created
             setTimeout(() => {
                 document.getElementById('branding-shapes-container').style.opacity = '1';
@@ -250,10 +290,12 @@
                     s.y = Math.max(0, Math.min(s.y, height - s.size));
                 }
             }
-            window.addEventListener('resize', () => {
+            // Debounced resize handler for branding shapes
+            const debouncedShapeResize = debounce(() => {
                 createShapes();
                 handleResizeOrScroll();
-            });
+            }, 250);
+            window.addEventListener('resize', debouncedShapeResize);
             window.addEventListener('scroll', handleResizeOrScroll);
         });
         </script>
@@ -323,10 +365,30 @@
                 if (notice) notice.classList.add('hidden');
                 if (!downloaded && link) {
                     link.style.display = '';
-                    link.click();
-                    downloaded = true;
-                    sessionStorage.setItem(key, 'true');
-                    sessionStorage.setItem(expiryKey, (now + 7 * 24 * 60 * 60 * 1000).toString());
+
+                    // Use fetch API to prevent page reload
+                    fetch(link.href)
+                        .then(resp => resp.blob())
+                        .then(blob => {
+                            const url = URL.createObjectURL(blob);
+                            const tempLink = document.createElement('a');
+                            tempLink.href = url;
+                            tempLink.download = 'Regi Ellis.vcf';
+                            tempLink.click();
+                            URL.revokeObjectURL(url);
+
+                            downloaded = true;
+                            sessionStorage.setItem(key, 'true');
+                            sessionStorage.setItem(expiryKey, (now + 7 * 24 * 60 * 60 * 1000).toString());
+                        })
+                        .catch(err => {
+                            console.error('vCard download failed:', err);
+                            // Fallback to regular click
+                            link.click();
+                            downloaded = true;
+                            sessionStorage.setItem(key, 'true');
+                            sessionStorage.setItem(expiryKey, (now + 7 * 24 * 60 * 60 * 1000).toString());
+                        });
                 }
             }, 2000);
         }
@@ -484,7 +546,8 @@
         drawFrame();
         animateSequence(0);
 
-        window.addEventListener('resize', () => {
+        // Debounced resize handler for canvas
+        const debouncedCanvasResize = debounce(() => {
             width = window.innerWidth;
             height = window.innerHeight;
             canvas.width = width * dpr;
@@ -493,7 +556,8 @@
             canvas.style.height = height + "px";
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             drawFrame();
-        });
+        }, 250);
+        window.addEventListener('resize', debouncedCanvasResize);
     }
     document.addEventListener('DOMContentLoaded', animateIrregularGrid);
 
@@ -531,28 +595,32 @@
         input.value = safePrefix;
         showQrModal(safePrefix);
     }
+    // Initialize QR modal functionality (consolidated hash check logic)
     document.addEventListener('DOMContentLoaded', function() {
-        // QR modal open/close logic
         const closeBtn = document.getElementById('qrcode-close');
-        if (closeBtn) closeBtn.onclick = hideQrModal;
         const updateBtn = document.getElementById('qr-update');
+        const modal = document.getElementById('qrcode-modal');
+
+        // Bind modal controls
+        if (closeBtn) closeBtn.onclick = hideQrModal;
         if (updateBtn) updateBtn.onclick = updateQrCode;
-        // Listen for hash change
+
+        // Single hash check function
         function checkHashForQr() {
             if (window.location.hash === '#qrcode') {
-                // Only use prefix param from current URL, sanitize it
                 const urlParams = new URLSearchParams(window.location.search);
-                let prefix = urlParams.get('prefix') || '';
-                prefix = prefix.replace(/[^a-zA-Z0-9 ]/g, '');
+                let prefix = (urlParams.get('prefix') || '').replace(/[^a-zA-Z0-9 ]/g, '');
                 showQrModal(prefix);
             } else {
                 hideQrModal();
             }
         }
+
+        // Initialize: set up listener and check once
         window.addEventListener('hashchange', checkHashForQr);
         checkHashForQr();
-        // Prevent bots/search: hide modal from bots
-        const modal = document.getElementById('qrcode-modal');
+
+        // SEO protection
         if (modal) {
             modal.setAttribute('aria-hidden', 'true');
             modal.setAttribute('data-noindex', 'true');
