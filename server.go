@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
@@ -95,74 +94,8 @@ func main() {
 	})
 
 	r.GET("/vcard", func(c *gin.Context) {
-		prefix := c.Query("prefix")
-		if decoded, err := url.QueryUnescape(prefix); err == nil {
-			prefix = decoded
-		}
-
-		c.Header("Content-Type", "text/vcard")
-		c.Header("Content-Disposition", "attachment; filename=\""+data.Name+".vcf\"")
-		c.Header("Cache-Control", "no-store")
-
-		photoBase64, err := getBase64Photo(data.Photo)
-		photoSection := ""
-		if err != nil {
-			log.Printf("Failed to encode photo: %v", err)
-		}
-		if err == nil && photoBase64 != "" {
-			photoType := "JPEG"
-			photoSection = "PHOTO;ENCODING=b;TYPE=" + photoType + ":" + photoBase64 + "\n"
-		}
-
-		finalNote := escapeVCardField(data.Notes)
-		if len(prefix) > 500 {
-			prefix = ""
-		}
-		if prefix != "" {
-			finalNote = escapeVCardField(prefix) + "\\n" + finalNote
-		}
-
-		extraLinks := ""
-		if data.GitHub != "" {
-			extraLinks += "GitHub: " + data.GitHub + "\\n"
-		}
-		if data.LinkedIn != "" {
-			extraLinks += "LinkedIn: " + data.LinkedIn + "\\n"
-		}
-		if data.Instagram != "" {
-			extraLinks += "Instagram: " + data.Instagram + "\\n"
-		}
-		if data.YouTube != "" {
-			extraLinks += "YouTube: " + data.YouTube + "\\n"
-		}
-
-		noteWithLinks := finalNote
-		if extraLinks != "" {
-			noteWithLinks += "\\n" + extraLinks
-		}
-
-		nameParts := strings.Split(data.Name, " ")
-		lastName := ""
-		firstName := data.Name
-		if len(nameParts) > 1 {
-			lastName = nameParts[len(nameParts)-1]
-			firstName = strings.Join(nameParts[:len(nameParts)-1], " ")
-		}
-
-		vcard := "BEGIN:VCARD\n" +
-			"VERSION:3.0\n" +
-			"FN:" + escapeVCardField(data.Name) + "\n" +
-			"N:" + escapeVCardField(lastName) + ";" + escapeVCardField(firstName) + ";;;\n" +
-			"ORG:" + escapeVCardField(data.Company) + "\n" +
-			"TITLE:" + escapeVCardField(data.Role) + "\n" +
-			"EMAIL;TYPE=INTERNET,WORK:" + escapeVCardField(data.Email) + "\n" +
-			"TEL;TYPE=WORK,VOICE:" + escapeVCardField(data.Phone) + "\n" +
-			"ADR;TYPE=WORK:;;" + escapeVCardField(data.Address) + "\n" +
-			"URL;TYPE=WORK:" + escapeVCardField(data.Website) + "\n" +
-			photoSection +
-			"NOTE:" + noteWithLinks + "\n" +
-			"END:VCARD\n"
-		c.String(http.StatusOK, vcard)
+		c.Header("X-Robots-Tag", "noindex, nofollow")
+		c.String(http.StatusNotFound, "Not Found")
 	})
 	r.Static("/static", "public/assets")
 
